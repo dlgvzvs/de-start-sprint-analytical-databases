@@ -4,6 +4,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime, timedelta
 import boto3
 import vertica_python
+from airflow.models import Variable # добавил импорт переменных из airflow
 
 default_args = { # для дага необходимы аргументы по умолчанию, их напишем в первую очередь
     'owner': 'dlgvzvs',
@@ -23,14 +24,12 @@ dag = DAG ( # непосредственно сам даг
 
 # скачивает файл не даг, а функция внутри дага, здесь её и пропишу
 def download_group_log():
-    aws_access_key_id = "YCAJEiyNFq4wiOe_eMCMCXmQP"
-    aws_secret_access_key = "YCP1e96y4QI8OmcB4Eaf4q0nMHwhmtvGbDTgBeqS"
     session = boto3.session.Session()
     s3_client = session.client(
         service_name='s3',
         endpoint_url='https://storage.yandexcloud.net',
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
+        aws_access_key_id=Variable.get("aws_access_key_id"), # беру эти переменные для подстановки в параметры сессии
+        aws_secret_access_key=Variable.get("aws_secret_access_key"),
     )
     s3_client.download_file(
         Bucket='sprint6',
